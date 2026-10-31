@@ -234,6 +234,9 @@ fun LauncherSettingsScreen(
             }
 
             //启动器背景设置板块
+            //【已强制隐藏】启动器背景、背景元素不透明度、视频背景音量三个设置项不再提供
+            //如需恢复，删除下面的块注释标记即可
+            /*
             LocalBackgroundViewModel.current?.let { backgroundViewModel ->
                 AnimatedItem(scope) { yOffset ->
                     SettingsCardColumn(
@@ -275,54 +278,11 @@ fun LauncherSettingsScreen(
                             enabled = backgroundViewModel.isValid && backgroundViewModel.isVideo,
                             fineTuningControl = true
                         )
+                    }
+                }
+            }
+            */
 
-//                        IntSliderSettingsCard(
-//                            modifier = Modifier.fillMaxWidth(),
-//                            position = CardPosition.Bottom,
-//                            unit = AllSettings.backgroundBlur,
-//                            title = stringResource(R.string.settings_title_blur),
-//                            summary = stringResource(R.string.settings_launcher_background_blur_summary),
-//                            valueRange = AllSettings.backgroundBlur.floatRange,
-//                            suffix = "Dp",
-//                            enabled = backgroundViewModel.isValid,
-//                            fineTuningControl = true,
-//                            appendContent = {
-//                                val unit = AllSettings.backgroundBlurType
-//                                val state = unit.state
-//                                IconButton(
-//                                    modifier = Modifier
-//                                        .padding(start = 12.dp)
-//                                        .size(32.dp),
-//                                    colors = IconButtonDefaults.iconButtonColors(
-//                                        containerColor = MaterialTheme.colorScheme.primary,
-//                                        contentColor = MaterialTheme.colorScheme.onPrimary,
-//                                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = DisabledAlpha),
-//                                        disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = DisabledAlpha),
-//                                    ),
-//                                    onClick = {
-//                                        unit.save(state.switch())
-//                                    },
-//                                    enabled = backgroundViewModel.isValid,
-//                                ) {
-//                                    Crossfade(
-//                                        targetState = state
-//                                    ) { target ->
-//                                        val painter = when (target) {
-//                                            BackgroundBlur.Background -> painterResource(R.drawable.ic_blur_circular_outlined)
-//                                            BackgroundBlur.Foreground -> painterResource(R.drawable.ic_blur_circular_filled)
-//                                        }
-//                                        Icon(
-//                                            painter = painter,
-//                                            contentDescription = null
-//                                        )
-//                                    }
-//                                }
-//                            }
-//                        )
-//                    }
-//                }
-//            }
-//
             //动画设置板块
             AnimatedItem(scope) { yOffset ->
                 SettingsCardColumn(
