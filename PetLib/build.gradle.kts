@@ -126,6 +126,6 @@ androidComponents {
     }
 }
 
-// tasks.named("preBuild") {
-//     dependsOn(cargoBuild)
-// }
+tasks.named("preBuild") {
+    dependsOn(cargoBuild)
+}

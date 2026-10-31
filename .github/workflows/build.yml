@@ -21,6 +21,45 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Rust toolchain for PetLib
+        run: |
+          set -e
+          # 安装 Rust 稳定版工具链
+          if ! command -v rustup >/dev/null 2>&1; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable
+          fi
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.cargo/bin:$PATH"
+          # 添加四个 Android 交叉编译目标
+          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+          # 安装 cargo-ndk（若缓存命中则跳过）
+          if ! cargo ndk --version >/dev/null 2>&1; then
+            cargo install cargo-ndk --locked
+          fi
+          cargo ndk --version
+          rustc --version
+
+      - name: Configure Android NDK for cargo-ndk
+        run: |
+          set -e
+          # 解析 CI runner 上已安装的 NDK 路径并写入环境变量
+          NDK_DIR=""
+          if [ -n "$ANDROID_NDK_LATEST_HOME" ] && [ -d "$ANDROID_NDK_LATEST_HOME" ]; then
+            NDK_DIR="$ANDROID_NDK_LATEST_HOME"
+          elif [ -n "$ANDROID_NDK_HOME" ] && [ -d "$ANDROID_NDK_HOME" ]; then
+            NDK_DIR="$ANDROID_NDK_HOME"
+          else
+            NDK_DIR="$(ls -d "$ANDROID_HOME"/ndk/* 2>/dev/null | sort -V | tail -n 1)"
+          fi
+          if [ -z "$NDK_DIR" ] || [ ! -d "$NDK_DIR" ]; then
+            echo "No Android NDK found; installing via sdkmanager"
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;27.0.12077973" >/dev/null
+            NDK_DIR="$ANDROID_HOME/ndk/27.0.12077973"
+          fi
+          echo "Using Android NDK: $NDK_DIR"
+          echo "ANDROID_NDK_HOME=$NDK_DIR" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_ROOT=$NDK_DIR" >> "$GITHUB_ENV"
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
