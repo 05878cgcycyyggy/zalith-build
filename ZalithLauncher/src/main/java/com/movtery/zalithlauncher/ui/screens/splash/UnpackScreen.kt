@@ -20,8 +20,8 @@ package com.movtery.zalithlauncher.ui.screens.splash
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
@@ -117,27 +117,46 @@ private fun ActionMenu(
 ) {
     var installing by remember { mutableStateOf(false) }
 
-    //【按钮脱落动画】点击“同意并安装”后，按钮以最右侧为锚点向下旋转 90° 并脱落坠出屏幕
-    //这只是视觉效果，安装/解压逻辑完全不受影响
+    //【按钮脱落动画】点击“同意并安装”后，按钮以最右侧为锚点向下摆动，最后脱落坠出屏幕
+    //锚点在按钮最右侧，负角度 = 按钮左端向下方落下（钟摆方向）
+    //仅为视觉效果，安装/解压逻辑完全不受影响
     var dropStarted by remember { mutableStateOf(false) }
 
-    //旋转：900ms 内绕最右侧锚点向下转 90°
-    val rotateProgress by animateFloatAsState(
-        targetValue = if (dropStarted) 1f else 0f,
-        animationSpec = tween(
-            durationMillis = 900,
-            easing = FastOutSlowInEasing
-        ),
-        label = "AgreeButtonRotate"
+    //摆动角度：以最右侧为轴心，左端先向下摆到垂直（半圈），
+    //然后像钟摆一样反复回摆，幅度逐次衰减，最后甩到垂直位置脱开
+    val swingAngle by animateFloatAsState(
+        targetValue = if (dropStarted) -90f else 0f,
+        animationSpec = keyframes {
+            durationMillis = 1500
+            //第一次向下摆到底：左端落下 90°，按钮立起来
+            -90f at 380
+            //第一次回摆，幅度约为原来的 3/4
+            -24f at 600
+            //第二次下摆，幅度略小于第一次
+            -78f at 810
+            //第二次回摆
+            -40f at 970
+            //第三次下摆
+            -70f at 1110
+            //第三次回摆，幅度明显缩小
+            -52f at 1230
+            //第四次下摆
+            -66f at 1330
+            //最后一次回摆，几乎贴着垂直位置
+            -58f at 1400
+            //甩到垂直位置，此时失去支撑开始坠落
+            -90f at 1500
+        },
+        label = "AgreeButtonSwing"
     )
 
-    //坠落：旋转接近结束时开始，加速坠出屏幕底部
+    //坠落：摆动结束的同时立刻坠落，不在垂直位置悬停
     val dropProgress by animateFloatAsState(
         targetValue = if (dropStarted) 1f else 0f,
         animationSpec = tween(
-            durationMillis = 900,
-            delayMillis = 700,
-            easing = CubicBezierEasing(0.4f, 0f, 1f, 1f)
+            durationMillis = 620,
+            delayMillis = 1500,
+            easing = CubicBezierEasing(0.55f, 0f, 1f, 1f)
         ),
         label = "AgreeButtonDrop"
     )
@@ -179,9 +198,9 @@ private fun ActionMenu(
                 .graphicsLayer {
                     //锚点：按钮最右侧、垂直中点（最右边第一个锚点）
                     transformOrigin = TransformOrigin(1f, 0.5f)
-                    //绕锚点向下（顺时针）旋转 90°：按钮立起来并脱开
-                    rotationZ = 90f * rotateProgress
-                    //旋转完成后失去支撑，加速坠出屏幕底部
+                    //绕锚点摆动：负角度让按钮左端向下方落下
+                    rotationZ = swingAngle
+                    //摆动结束后失去支撑，加速坠出屏幕底部
                     translationY = screenHeightPx * 1.5f * dropProgress
                     //坠落过程中淡出，避免边缘残留
                     alpha = 1f - dropProgress

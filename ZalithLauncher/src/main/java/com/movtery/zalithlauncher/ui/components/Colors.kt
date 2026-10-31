@@ -21,7 +21,6 @@ package com.movtery.zalithlauncher.ui.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.viewmodel.influencedByBackground
 
 /**
@@ -35,13 +34,21 @@ fun Color.desaturate(factor: Float): Color {
 }
 
 /**
+ * 按键/卡片等元素在有背景时的不透明度
+ *
+ * 强制背景后为了让背景图最大程度透出，这里取一个远低于原设置项下限（20%）的值，
+ * 只保留极淡的一层底色，用来维持卡片和按键的轮廓，避免完全看不见边界。
+ */
+private const val BACKGROUND_MIN_ALPHA = 0.12f
+
+/**
  * 受背景内容影响的颜色，设置背景内容时，支持调整不透明度用于适配背景内容画面
  * @param influencedAlpha 受影响时，调整的 alpha 值
  */
 @Composable
 fun influencedByBackgroundColor(
     color: Color,
-    influencedAlpha: Float = AllSettings.launcherBackgroundOpacity.state.toFloat() / 100f,
+    influencedAlpha: Float = BACKGROUND_MIN_ALPHA,
     enabled: Boolean = true
 ): Color {
     return influencedByBackground(
