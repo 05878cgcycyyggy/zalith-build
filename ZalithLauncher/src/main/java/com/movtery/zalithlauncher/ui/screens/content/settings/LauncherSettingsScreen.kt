@@ -476,7 +476,8 @@ private fun CustomColorOperation(
                 },
                 onChangeFinished = {
                     AllSettings.launcherCustomColor.updateState(currentColor.toArgb())
-onCancel = {
+                },
+                onCancel = {
                     //还原颜色、配色主题
                     AllSettings.launcherCustomColor.updateState(colorController.getOriginalColor().toArgb())
                     AllSettings.launcherCustomPaletteStyle.updateState(originalStyle)
@@ -486,7 +487,6 @@ onCancel = {
                     AllSettings.launcherCustomColor.save(selectedColor.toArgb())
                     AllSettings.launcherCustomPaletteStyle.save(paletteStyle)
                     updateOperation(CustomColorOperationType.None)
-                },
                 },
             )
         }
