@@ -1,24 +1,18 @@
-# Zalith Launcher 2
+# zalith-build
 
-![Downloads](https://img.shields.io/github/downloads/ZalithLauncher/ZalithLauncher2/total)
-[![Sponsor](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors)](https://afdian.com/a/MovTery)
+> **Third-party derivative work (secondary creation). Not the official version by the original author.**
 
-[简体中文](README.md) | [繁體中文](README_ZH_TW.md)
+**zalith-build** is a [Minecraft: Java Edition](https://www.minecraft.net/) launcher for **Android devices**, developed as a **secondary creation (derivative work)** based on the original [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2).
 
-> [!IMPORTANT]
-> This project is **completely separate** from [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher).
+This project is a second modification and redevelopment based on the original **Zalith Launcher 2**, deeply reworked for Android devices, featuring a modern UI built with **Jetpack Compose** and **Material Design 3**. The original Zalith Launcher 2 is in turn based on the [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) launching engine.
 
-**Zalith Launcher 2** is a [Minecraft: Java Edition](https://www.minecraft.net/) launcher for **Android devices**, developed as a **secondary creation (derivative work)** based on [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni). Using PojavLauncher as its core launching engine, the project deeply reworks and redevelops the interface interactions, feature modules, and overall experience, featuring a modern UI built with **Jetpack Compose** and **Material Design 3**.
+This project is **not** the official version of Zalith Launcher 2, nor is it developed by the original author of Zalith Launcher 2. We thank the original Zalith Launcher 2 author and the [PojavLauncher team](https://github.com/PojavLauncherTeam/PojavLauncher) for their open source contributions.
 
-This project is a second modification referencing the original work. We thank the [PojavLauncher team](https://github.com/PojavLauncherTeam/PojavLauncher) for their open source contributions.
+## Project Overview
 
-We are currently building our official website [zalithlauncher.cn](https://zalithlauncher.cn).
-
-Additionally, we are aware that a third-party website has been set up using the name "Zalith Launcher", appearing to be official. Please note: **this site was not created by us**. It exploits the name to display ads for profit. We **do not participate in, endorse, or trust** such content. Please stay vigilant and **protect your personal privacy**.
-
-## Language and Translation Support
-
-We are using the Weblate platform to translate Zalith Launcher 2. You're welcome to join our [Weblate project](https://hosted.weblate.org/projects/zalithlauncher2) and contribute to the translations! Thank you to every language contributor for helping make Zalith Launcher 2 more multilingual and global.
+- Original project: [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2) (by the original author)
+- This project: zalith-build (third-party derivative work)
+- Launching engine: [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher)
 
 ## Build Instructions (For Developers)
 
@@ -38,7 +32,7 @@ We are using the Weblate platform to translate Zalith Launcher 2. You're welcome
 ### Build Steps
 
 ```bash
-git clone git@github.com:ZalithLauncher/ZalithLauncher2.git
+git clone git@github.com:05878cgcycyyggy/zalith-build.git
 # Open the project in Android Studio and build
 # Or use the command line:
 ./gradlew :ZalithLauncher:assembleDebug
@@ -48,7 +42,7 @@ git clone git@github.com:ZalithLauncher/ZalithLauncher2.git
 
 ## License
 
-This project is licensed under the **[GPL-3.0 license](LICENSE)**.
+This project is a derivative work based on the original [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2). It follows the **[GPL-3.0 license](LICENSE)** used by the original work (the license belongs to the original author).
 
 ### Additional Terms (Pursuant to Section 7 of the GPLv3 License)
 

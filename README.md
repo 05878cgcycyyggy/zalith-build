@@ -1,24 +1,18 @@
-# Zalith Launcher 2
+# zalith-build
 
-![Downloads](https://img.shields.io/github/downloads/ZalithLauncher/ZalithLauncher2/total)
-[![Sponsor](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors)](https://afdian.com/a/MovTery)
+> **第三方二次创作（二创）项目，非原作者官方版本。**
 
-[English](README_EN_US.md) | [繁體中文](README_ZH_TW.md)
+**zalith-build** 是一个基于原版 [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2) 进行二次创作（二创）的 [Minecraft: Java Edition](https://www.minecraft.net/) Android 启动器。
 
-> [!IMPORTANT]
-> 该项目与 [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher) 属于两个完全不同的项目。
+本项目以原版 **Zalith Launcher 2** 为基础进行二次修改与再开发，针对 Android 设备进行深度重构，采用 **Jetpack Compose** 与 **Material Design 3** 构建现代化 UI 体验。原版 Zalith Launcher 2 又基于 [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) 启动核心。
 
-**Zalith Launcher 2** 是基于 [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) 进行二次创作（二创）的 [Minecraft: Java Edition](https://www.minecraft.net/) Android 启动器。项目以 PojavLauncher 为启动核心，在其基础上对界面交互、功能模块与整体体验进行了深度重构与再开发，采用 **Jetpack Compose** 与 **Material Design 3** 构建现代化 UI 体验。
+本项目**并非**原版 Zalith Launcher 2 的官方版本，也**非** Zalith Launcher 2 原作者所开发。我们感谢原版 Zalith Launcher 2 作者与 [PojavLauncher 团队](https://github.com/PojavLauncherTeam/PojavLauncher) 的开源贡献。（该文档因为原文档的内容编写导致原参考作品可能会有偏差）
 
-本项目为参考原作品进行的二次修改，感谢 [PojavLauncher 团队](https://github.com/PojavLauncherTeam/PojavLauncher) 的开源贡献。
+## 项目说明
 
-我们目前正在搭建自己的官方网站 [zalithlauncher.cn](https://zalithlauncher.cn)。
-
-此外，我们已注意到有第三方使用“Zalith Launcher”名称搭建了一个看似官方的网站。请注意：**该网站并非我们创建**，其通过冒用名义并植入广告牟利。我们对此类行为**不参与、不认可、不信任**。请务必提高警惕，**谨防个人隐私信息泄露**。
-
-## 语言与翻译支持
-
-我们正在使用 Weblate 平台翻译 Zalith Launcher 2，欢迎您前往我们的 [Weblate 项目](https://hosted.weblate.org/projects/zalithlauncher2) 参与翻译！感谢每一位语言贡献者的支持，让 Zalith Launcher 2 更加多语、更加全球化。
+- 原版项目：[Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2)（原作者）
+- 本项目：zalith-build（第三方二创）
+- 启动核心：[PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher)
 
 ## 构建方式（开发者）
 
@@ -38,7 +32,7 @@
 ### 构建步骤
 
 ```bash
-git clone git@github.com:ZalithLauncher/ZalithLauncher2.git
+git clone git@github.com:05878cgcycyyggy/zalith-build.git
 # 使用 Android Studio 打开项目并进行构建
 # 或使用命令行：
 ./gradlew :ZalithLauncher:assembleDebug
@@ -48,13 +42,13 @@ git clone git@github.com:ZalithLauncher/ZalithLauncher2.git
 
 ## License
 
-本项目代码遵循 **[GPL-3.0 license](LICENSE)** 开源协议。
+本项目基于原版 [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2) 二次创作，遵循原作品采用的 **[GPL-3.0 license](LICENSE)** 开源协议（许可证归属原版作者）。
 
 ### 附加条款（依据 GPLv3 开源协议第七条）
 
 1. 当你分发该程序的修改版本时，你必须以合理方式修改该程序的名称或版本号，以示其与原始版本不同。（依据 [GPLv3, 7(c)](https://github.com/ZalithLauncher/ZalithLauncher2/blob/969827b/LICENSE#L372-L374)）
-   - 修改版本 **不得在名称中包含原程序名称 “ZalithLauncher” 或其缩写 “ZL”，也不得使用与官方名称相近、可能导致混淆的名称**。
-   - 所有修改版本 **必须在程序启动页面或主界面中以明显方式标注其为“非官方修改版”**。
+   - 修改版本 **不得在名称中包含原程序名称 "ZalithLauncher" 或其缩写 "ZL"，也不得使用与官方名称相近、可能导致混淆的名称**。
+   - 所有修改版本 **必须在程序启动页面或主界面中以明显方式标注其为"非官方修改版"**。
    - 该程序的应用名称可在 [gradle.properties](./ZalithLauncher/gradle.properties) 中修改。
 2. 你不得移除该程序所显示的版权声明。（依据 [GPLv3, 7(b)](https://github.com/ZalithLauncher/ZalithLauncher2/blob/969827b/LICENSE#L368-L370)）
 
