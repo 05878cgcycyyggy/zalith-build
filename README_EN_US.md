@@ -1,53 +1,59 @@
 # Zalith Launcher 2
+
 ![Downloads](https://img.shields.io/github/downloads/ZalithLauncher/ZalithLauncher2/total)
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors)](https://afdian.com/a/MovTery)
 
 [简体中文](README.md) | [繁體中文](README_ZH_TW.md)
 
-
 > [!IMPORTANT]
-> This project is **completely separate** from [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher).  
+> This project is **completely separate** from [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher).
 
-**Zalith Launcher 2** is a newly designed launcher for **Android devices** tailored for [Minecraft: Java Edition](https://www.minecraft.net/). The project uses [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) as its core launching engine and features a modern UI built with **Jetpack Compose** and **Material Design 3**.  
-We are currently building our official website [zalithlauncher.cn](https://zalithlauncher.cn)  
-Additionally, we are aware that a third-party website has been set up using the name “Zalith Launcher”, appearing to be official. Please note: **this site was not created by us**. It exploits the name to display ads for profit. We **do not participate in, endorse, or trust** such content.  
-Please stay vigilant and **protect your personal privacy**!
+**Zalith Launcher 2** is a newly designed launcher for **Android devices** tailored for [Minecraft: Java Edition](https://www.minecraft.net/). The project uses [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) as its core launching engine and features a modern UI built with **Jetpack Compose** and **Material Design 3**.
 
-## 🌐 Language and Translation Support
+We are currently building our official website [zalithlauncher.cn](https://zalithlauncher.cn).
 
-We are using the Weblate platform to translate Zalith Launcher 2. You're welcome to join our [Weblate project](https://hosted.weblate.org/projects/zalithlauncher2) and contribute to the translations!  
-Thank you to every language contributor for helping make Zalith Launcher 2 more multilingual and global!
+Additionally, we are aware that a third-party website has been set up using the name "Zalith Launcher", appearing to be official. Please note: **this site was not created by us**. It exploits the name to display ads for profit. We **do not participate in, endorse, or trust** such content. Please stay vigilant and **protect your personal privacy**.
 
-## 📦 Build Instructions (For Developers)
+## Language and Translation Support
+
+We are using the Weblate platform to translate Zalith Launcher 2. You're welcome to join our [Weblate project](https://hosted.weblate.org/projects/zalithlauncher2) and contribute to the translations! Thank you to every language contributor for helping make Zalith Launcher 2 more multilingual and global.
+
+## Build Instructions (For Developers)
 
 > The following section is for developers who wish to contribute or build the project locally.
 
 ### Requirements
 
-* Android Studio **Bumblebee** or newer
+* Android Studio (latest stable version recommended)
 * Android SDK:
-  * **Minimum API level**: 26
-  * **Target API level**: 35
-* JDK 11
+    * **Minimum API level**: 26
+    * **Target API level**: 34
+    * **Compile API level**: 37
+* JDK 17
+* Gradle 9.5 (managed by the project wrapper, no separate install needed)
+* Android Gradle Plugin 9.3.0 (managed by the project version catalog)
 
 ### Build Steps
 
 ```bash
 git clone git@github.com:ZalithLauncher/ZalithLauncher2.git
 # Open the project in Android Studio and build
+# Or use the command line:
+./gradlew :ZalithLauncher:assembleDebug
 ```
 
-## 📜 License
+> Note: The project uses the Gradle Wrapper to automatically download and apply Gradle 9.5 and Android Gradle Plugin 9.3.0, so no manual version configuration is needed.
+
+## License
 
 This project is licensed under the **[GPL-3.0 license](LICENSE)**.
 
 ### Additional Terms (Pursuant to Section 7 of the GPLv3 License)
 
 1. When distributing a modified version of this program, you must reasonably modify the program's name or version number to distinguish it from the original version. (According to [GPLv3, 7(c)](https://github.com/ZalithLauncher/ZalithLauncher2/blob/969827b/LICENSE#L372-L374))
-    - Modified versions **must not include the original program name "ZalithLauncher" or its abbreviation "ZL" in their name, nor use any name that is similar enough to cause confusion with the official name**.
-    - All modified versions **must clearly indicate that they are “Unofficial Modified Versions” on the program’s startup screen or main interface**.
-    - The application name of the program can be modified in [gradle.properties](./ZalithLauncher/gradle.properties).
-
+   - Modified versions **must not include the original program name "ZalithLauncher" or its abbreviation "ZL" in their name, nor use any name that is similar enough to cause confusion with the official name**.
+   - All modified versions **must clearly indicate that they are "Unofficial Modified Versions" on the program's startup screen or main interface**.
+   - The application name of the program can be modified in [gradle.properties](./ZalithLauncher/gradle.properties).
 2. You must not remove the copyright notices displayed by the program. (According to [GPLv3, 7(b)](https://github.com/ZalithLauncher/ZalithLauncher2/blob/969827b/LICENSE#L368-L370))
 
 ## Open Source Libraries and Licenses
@@ -64,7 +70,7 @@ This software uses the following open source libraries:
 | Apache Commons Compress               | -                                                                                                             | Apache 2.0           | [Link↗](https://commons.apache.org/proper/commons-compress)                        |
 | Apache Commons IO                     | -                                                                                                             | Apache 2.0           | [Link↗](https://commons.apache.org/proper/commons-io)                              |
 | ByteHook                              | Copyright © 2020-2024 ByteDance, Inc.                                                                         | MIT License          | [Link↗](https://github.com/bytedance/bhook)                                        |
-| BuildKeys                             | Copyright © 2026 MovTery                                                                                      | Aoache 2.0           | [Link↗](https://github.com/MovTery/BuildKeys)                                      |
+| BuildKeys                             | Copyright © 2026 MovTery                                                                                      | Apache 2.0           | [Link↗](https://github.com/MovTery/BuildKeys)                                      |
 | Coil Compose                          | Copyright © 2025 Coil Contributors                                                                            | Apache 2.0           | [Link↗](https://github.com/coil-kt/coil)                                           |
 | Coil Gifs                             | Copyright © 2025 Coil Contributors                                                                            | Apache 2.0           | [Link↗](https://github.com/coil-kt/coil)                                           |
 | Coil SVG                              | Copyright © 2025 Coil Contributors                                                                            | Apache 2.0           | [Link↗](https://github.com/coil-kt/coil)                                           |
