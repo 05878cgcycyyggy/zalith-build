@@ -403,9 +403,6 @@ fun LauncherSettingsScreen(
         }
     }
 }
-}
-}
-}
 
 @Composable
 private fun CustomColorOperation(
