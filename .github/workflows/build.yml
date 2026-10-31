@@ -37,6 +37,8 @@ jobs:
           # Actions runner 约 7GB 内存，Gradle 3G + Kotlin 3G = 6G 在安全范围内
           sed -i 's/org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=512m -XX:+UseParallelGC/' gradle.properties
           sed -i 's/kotlin.daemon.jvmargs=.*/kotlin.daemon.jvmargs=-Xmx3g/' gradle.properties
+          # 移除 Termux 专用 AAPT2 路径，让 CI 使用标准 AAPT2（否则依赖 AAR 资源编译失败）
+          sed -i '/android.aapt2FromMavenOverride/d' gradle.properties
           echo "=== 调整后 gradle.properties ==="
           cat gradle.properties
 
