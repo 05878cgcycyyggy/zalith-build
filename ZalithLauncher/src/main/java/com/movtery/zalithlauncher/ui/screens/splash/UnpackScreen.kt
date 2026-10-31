@@ -19,10 +19,6 @@
 package com.movtery.zalithlauncher.ui.screens.splash
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.keyframes
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,18 +42,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.nonInteractiveScrollbar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,7 +61,6 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.components.InstallableItem
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
-import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.ScalingActionButton
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.theme.itemColor
@@ -73,6 +68,9 @@ import com.movtery.zalithlauncher.ui.theme.onItemColor
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.viewmodel.SplashBackStackViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlin.random.Random
 
 @Composable
 fun UnpackScreen(
@@ -117,54 +115,6 @@ private fun ActionMenu(
 ) {
     var installing by remember { mutableStateOf(false) }
 
-    //【按钮脱落动画】点击“同意并安装”后，按钮以最右侧为锚点向下摆动，最后脱落坠出屏幕
-    //锚点在按钮最右侧，负角度 = 按钮左端向下方落下（钟摆方向）
-    //仅为视觉效果，安装/解压逻辑完全不受影响
-    var dropStarted by remember { mutableStateOf(false) }
-
-    //摆动角度：以最右侧为轴心，左端先向下摆到垂直（半圈），
-    //然后像钟摆一样反复回摆，幅度逐次衰减，最后甩到垂直位置脱开
-    val swingAngle by animateFloatAsState(
-        targetValue = if (dropStarted) -90f else 0f,
-        animationSpec = keyframes {
-            durationMillis = 1500
-            //第一次向下摆到底：左端落下 90°，按钮立起来
-            -90f at 380
-            //第一次回摆，幅度约为原来的 3/4
-            -24f at 600
-            //第二次下摆，幅度略小于第一次
-            -78f at 810
-            //第二次回摆
-            -40f at 970
-            //第三次下摆
-            -70f at 1110
-            //第三次回摆，幅度明显缩小
-            -52f at 1230
-            //第四次下摆
-            -66f at 1330
-            //最后一次回摆，几乎贴着垂直位置
-            -58f at 1400
-            //甩到垂直位置，此时失去支撑开始坠落
-            -90f at 1500
-        },
-        label = "AgreeButtonSwing"
-    )
-
-    //坠落：摆动结束的同时立刻坠落，不在垂直位置悬停
-    val dropProgress by animateFloatAsState(
-        targetValue = if (dropStarted) 1f else 0f,
-        animationSpec = tween(
-            durationMillis = 620,
-            delayMillis = 1500,
-            easing = CubicBezierEasing(0.55f, 0f, 1f, 1f)
-        ),
-        label = "AgreeButtonDrop"
-    )
-
-    val density = LocalDensity.current
-    val configuration = LocalConfiguration.current
-    val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
-
     val xOffset by swapAnimateDpAsState(
         targetValue = 40.dp,
         swapIn = isVisible,
@@ -191,32 +141,80 @@ private fun ActionMenu(
         }
 
         ScalingActionButton(
-            //保持原有配色，避免点击瞬间变灰打断旋转脱落的观感
+            //保持原有配色，避免点击瞬间变灰
             enabled = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .graphicsLayer {
-                    //锚点：按钮最右侧、垂直中点（最右边第一个锚点）
-                    transformOrigin = TransformOrigin(1f, 0.5f)
-                    //绕锚点摆动：负角度让按钮左端向下方落下
-                    rotationZ = swingAngle
-                    //摆动结束后失去支撑，加速坠出屏幕底部
-                    translationY = screenHeightPx * 1.5f * dropProgress
-                    //坠落过程中淡出，避免边缘残留
-                    alpha = 1f - dropProgress
-                },
+            modifier = Modifier.fillMaxWidth(),
             onClick = {
                 if (!installing) {
                     installing = true
-                    dropStarted = true
-                    //动画只是视觉效果，安装/解压立即正常开始
+                    //文字乱码只是视觉效果，安装/解压立即正常开始
                     onAgreeClick()
                 }
             }
         ) {
-            MarqueeText(text = stringResource(R.string.splash_screen_agree))
+            GlitchLabel()
         }
     }
+}
+
+/**
+ * 按钮上不断跳动的乱码文字
+ *
+ * 每一轮刷新时从字符池里随机抽若干字符拼成一串，并给整串文字一个随机的位移、
+ * 缩放和旋转，让它看起来像被干扰的信号。刷新间隔也是随机的，跳动节奏不规律。
+ */
+@Composable
+private fun GlitchLabel() {
+    //乱码字符池：拉丁字母、数字、半角假名、希腊字母、符号
+    val glyphPool = remember {
+        ('a'..'z').joinToString("") +
+        ('A'..'Z').joinToString("") +
+        ('0'..'9').joinToString("") +
+        "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎ" +
+        "αβγδεζηθλμπστφχψω" +
+        "#%&@$*+=<>/\\|~^?!"
+    }
+
+    //每次刷新用的随机源
+    val random = remember { Random(System.nanoTime()) }
+
+    var glitchText by remember { mutableStateOf("") }
+    var jitterX by remember { mutableFloatStateOf(0f) }
+    var jitterY by remember { mutableFloatStateOf(0f) }
+    var glitchScaleX by remember { mutableFloatStateOf(1f) }
+    var glitchRotation by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            //字符数量在 4~12 之间随机
+            val length = random.nextInt(4, 13)
+            glitchText = buildString(length) {
+                repeat(length) { append(glyphPool[random.nextInt(glyphPool.length)]) }
+            }
+            //随机跳动：位置、横向缩放、旋转都在小范围内抖动
+            jitterX = random.nextFloat() * 8f - 4f
+            jitterY = random.nextFloat() * 6f - 3f
+            glitchScaleX = 0.9f + random.nextFloat() * 0.2f
+            glitchRotation = random.nextFloat() * 10f - 5f
+            //刷新间隔随机，跳动节奏不规律
+            delay(random.nextLong(60L, 160L))
+        }
+    }
+
+    Text(
+        modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                translationX = jitterX
+                translationY = jitterY
+                scaleX = glitchScaleX
+                rotationZ = glitchRotation
+            },
+        text = glitchText,
+        maxLines = 1,
+        style = MaterialTheme.typography.labelLarge,
+        textAlign = TextAlign.Center
+    )
 }
 
 @Composable

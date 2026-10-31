@@ -215,6 +215,9 @@ fun LauncherSettingsScreen(
                         }
                     )
 
+                    //【已强制隐藏】节日彩蛋效果开关不再提供
+                    //如需恢复，删除下面的块注释标记即可
+                    /*
                     SwitchSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
                         position = CardPosition.Middle,
@@ -222,6 +225,7 @@ fun LauncherSettingsScreen(
                         title = stringResource(R.string.settings_launcher_festivals_effects_title),
                         summary = stringResource(R.string.settings_launcher_festivals_effects_summary)
                     )
+                    */
 
                     SwitchSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
