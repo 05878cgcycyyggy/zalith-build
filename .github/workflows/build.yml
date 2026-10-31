@@ -31,6 +31,15 @@ jobs:
           rm -rf .gradle ZalithLauncher/build
           ./gradlew clean --no-daemon || true
 
+      - name: Increase build memory for CI (fix Kotlin OOM)
+        run: |
+          # 提高 Gradle 与 Kotlin 编译器堆内存，避免 GC overhead limit exceeded
+          # Actions runner 约 7GB 内存，Gradle 3G + Kotlin 3G = 6G 在安全范围内
+          sed -i 's/org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=512m -XX:+UseParallelGC/' gradle.properties
+          sed -i 's/kotlin.daemon.jvmargs=.*/kotlin.daemon.jvmargs=-Xmx3g/' gradle.properties
+          echo "=== 调整后 gradle.properties ==="
+          cat gradle.properties
+
       - name: Build Debug APK
         run: ./gradlew :ZalithLauncher:assembleDebug --no-daemon --rerun-tasks
 
