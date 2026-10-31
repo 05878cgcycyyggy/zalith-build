@@ -330,7 +330,8 @@ dependencies {
     implementation(libs.process.phoenix)
     implementation(libs.lunarcalendar)
     implementation(
-        fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))) {
+        fileTree("libs") {
+            include("*.jar", "*.aar")
             // 排除 3.4.1 natives AAR，改用 patch 后（namespace 唯一）的版本
             exclude("lwjgl-3.4.1-natives-release.aar")
         }
