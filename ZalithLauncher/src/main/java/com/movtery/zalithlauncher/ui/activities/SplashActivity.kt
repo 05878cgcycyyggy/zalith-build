@@ -35,6 +35,7 @@ import com.movtery.zalithlauncher.SplashException
 import com.movtery.zalithlauncher.components.Components
 import com.movtery.zalithlauncher.components.InstallableItem
 import com.movtery.zalithlauncher.components.UnpackComponentsTask
+import com.movtery.zalithlauncher.components.UnpackModpackTask
 import com.movtery.zalithlauncher.components.jre.Jre
 import com.movtery.zalithlauncher.components.jre.UnpackJnaTask
 import com.movtery.zalithlauncher.components.jre.UnpackJreTask
@@ -151,6 +152,17 @@ class SplashActivity : BaseAppCompatActivity() {
                     "JNA",
                     getString(R.string.unpack_screen_jna),
                     jnaTask
+                )
+            )
+        }
+        // 首次启动时自动解压内嵌的完整游戏实例，安装完成后显示在主菜单游戏列表中
+        val modpackTask = UnpackModpackTask(this@SplashActivity)
+        if (!modpackTask.isCheckFailed()) {
+            unpackItems.add(
+                InstallableItem(
+                    modpackTask.getModpackVersionName(),
+                    getString(R.string.unpack_screen_modpack),
+                    modpackTask
                 )
             )
         }

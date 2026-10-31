@@ -33,3 +33,6 @@ LWJGL/*/build/
 .vscode/
 
 gradle-9.5.0-bin.zip
+
+# 内嵌游戏实例：由 modpack_parts/ 下的分块在 CI 编译前拼接生成，不入库
+ZalithLauncher/src/main/assets/modpack/game-instance.zip

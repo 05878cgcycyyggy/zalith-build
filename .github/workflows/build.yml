@@ -42,6 +42,13 @@ jobs:
           echo "=== 调整后 gradle.properties ==="
           cat gradle.properties
 
+      - name: Assemble bundled modpack archive
+        run: |
+          mkdir -p ZalithLauncher/src/main/assets/modpack
+          cat modpack_parts/game-instance.zip.part-* > ZalithLauncher/src/main/assets/modpack/game-instance.zip
+          echo "13d40f0ea9eeeb7adcdc9f94dd0d19362347990013c1b9c7204a67cb00a3895f  ZalithLauncher/src/main/assets/modpack/game-instance.zip" | sha256sum -c -
+          ls -lh ZalithLauncher/src/main/assets/modpack/game-instance.zip
+
       - name: Build Debug APK
         run: ./gradlew :ZalithLauncher:assembleDebug --no-daemon --rerun-tasks
 
