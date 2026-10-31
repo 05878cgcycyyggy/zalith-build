@@ -1,6 +1,8 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType.ABI
 import com.android.build.api.variant.impl.VariantOutputImpl
 import com.android.build.gradle.tasks.MergeSourceSetFolders
+import org.gradle.api.tasks.Sync
+import org.gradle.api.tasks.bundling.Zip
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -28,6 +30,38 @@ val defaultKeyPassword = project.findProperty("default_key_password") as? String
 val defaultCurseForgeApiKey = project.findProperty("curseforge_api_key") as? String
 
 val projectArch: String = System.getProperty("arch", "all")
+
+// ===== LWJGL natives AAR namespace 冲突修复 =====
+// lwjgl-3.3.3 和 lwjgl-3.4.1 的 natives-release AAR 使用相同 package "org.angelauramc.lwjgl3x"，
+// 导致 Android manifest 合并冲突（Namespace used in multiple modules）。
+// 这里把 3.4.1 的 manifest package 改写为唯一值后重新打包，作为依赖使用。
+val patchedLwjgl341Aar = layout.buildDirectory.file("patched-libs/lwjgl-3.4.1-natives-release.aar")
+val lwjgl341SrcAar = file("libs/lwjgl-3.4.1-natives-release.aar")
+val lwjgl341TmpDir = layout.buildDirectory.dir("patched-libs/tmp341")
+
+// 1) 解压原始 AAR
+val unzipLwjgl341Task = tasks.register<Sync>("unzipLwjgl341") {
+    from(zipTree(lwjgl341SrcAar))
+    into(lwjgl341TmpDir)
+}
+
+// 2) 替换 manifest 里的 namespace package
+val patchManifest341Task = tasks.register("patchManifest341") {
+    dependsOn(unzipLwjgl341Task)
+    doLast {
+        val manifest = File(lwjgl341TmpDir.get().asFile, "AndroidManifest.xml")
+        manifest.writeText(manifest.readText().replace("org.angelauramc.lwjgl3x", "org.angelauramc.lwjgl341x"))
+    }
+}
+
+// 3) 重新打包为 AAR
+val patchLwjgl341NativesTask = tasks.register<Zip>("patchLwjgl341NativesAar") {
+    dependsOn(patchManifest341Task)
+    archiveFileName.set("lwjgl-3.4.1-natives-release.aar")
+    destinationDirectory.set(layout.buildDirectory.dir("patched-libs"))
+    from(lwjgl341TmpDir)
+}
+tasks.named("preBuild").configure { dependsOn(patchLwjgl341NativesTask) }
 
 fun getKeyFromLocal(envKey: String, fileName: String? = null, default: String? = null): String {
     val key = System.getenv(envKey)
@@ -295,7 +329,13 @@ dependencies {
     implementation(libs.fishnet)
     implementation(libs.process.phoenix)
     implementation(libs.lunarcalendar)
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
+    implementation(
+        fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))) {
+            // 排除 3.4.1 natives AAR，改用 patch 后（namespace 唯一）的版本
+            exclude("lwjgl-3.4.1-natives-release.aar")
+        }
+    )
+    implementation(files(patchedLwjgl341Aar))
     //Safe
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
