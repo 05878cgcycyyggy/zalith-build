@@ -36,20 +36,33 @@ import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.movtery.zalithlauncher.context.copyLocalFile
 import com.movtery.zalithlauncher.context.copyAssetFile
 import com.movtery.zalithlauncher.context.GlobalContext
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.BackgroundBlur
 import com.movtery.zalithlauncher.utils.image.isImageFile
+import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.video.isVideoFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.apache.commons.io.FileUtils
 import java.io.File
+
+private const val TAG = "BackgroundViewModel"
+
+/**
+ * 内置的强制背景图片（位于 assets/background/ 下）
+ * 启动器背景被固定为此图，用户无法更改
+ */
+private const val BUILTIN_BACKGROUND_ASSET = "background/builtin-background.png"
+
+/**
+ * 强制背景时使用的不透明度
+ * 100 会让背景被完全不透明的遮罩盖住，因此固定在 80 保证背景可见
+ */
+private const val BG_FORCED_OPACITY = 80
 
 /**
  * 启动器背景管理
@@ -140,19 +153,21 @@ class BackgroundViewModel: ViewModel() {
     }
 
     init {
-        // 加载默认背景图片
-        if (!backgroundFile.exists()) {
-            viewModelScope.launch(Dispatchers.IO) {
-                try {
-                    GlobalContext.copyAssetFile("background/tba-end.png", backgroundFile.parent, overwrite = true)
-                    updateState()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-        viewModelScope.launch(Dispatchers.Main) {
+        //【强制背景】启动器背景被固定为内置图片，不允许用户更改
+        //每次创建 ViewModel 都从 assets 重新覆盖一次，确保背景文件始终是这张图
+        viewModelScope.launch(Dispatchers.IO) {
+            ensureBuiltinBackground()
             updateState()
+        }
+
+        //【强制背景】校正背景显示参数，确保这张图片一定可见
+        //不透明度 >= 100 会让背景完全被遮罩盖住，这里强制限制在可见范围
+        if (AllSettings.launcherBackgroundOpacity.state >= 100) {
+            AllSettings.launcherBackgroundOpacity.save(BG_FORCED_OPACITY)
+        }
+        //模糊值为 0 才是清晰原图，避免背景被糊涂
+        if (AllSettings.backgroundBlur.state != 0) {
+            AllSettings.backgroundBlur.save(0)
         }
 
         viewModelScope.launch {
@@ -178,22 +193,37 @@ class BackgroundViewModel: ViewModel() {
     }
 
     suspend fun delete() {
+        //【强制背景】背景被固定为内置图片，禁止删除
+        //这里不执行任何删除操作，仅重新同步一次状态，保证背景文件存在
         withContext(Dispatchers.IO) {
-            FileUtils.deleteQuietly(backgroundFile)
+            ensureBuiltinBackground()
             updateState()
         }
     }
 
     suspend fun import(context: Context, result: Uri) {
+        //【强制背景】背景被固定为内置图片，禁止用户更换
+        //忽略用户选择的文件，直接恢复为内置背景
         withContext(Dispatchers.IO) {
-            FileUtils.deleteQuietly(backgroundFile)
-            context.copyLocalFile(result, backgroundFile)
-            if (!backgroundFile.isImageFile() && !backgroundFile.isVideoFile()) {
-                //不是媒体类文件
-                FileUtils.deleteQuietly(backgroundFile)
-                error("The selected file is not an image or a video!")
-            }
+            Logger.warning(TAG, "Changing the launcher background is disabled; restoring the builtin background.")
+            ensureBuiltinBackground()
             updateState()
+        }
+    }
+
+    /**
+     * 确保内置背景文件存在于磁盘上，内容始终与 assets 中的图片一致
+     * 无条件覆盖，保证用户无法通过任何方式替换背景
+     */
+    private fun ensureBuiltinBackground() {
+        try {
+            GlobalContext.copyAssetFile(
+                fileName = BUILTIN_BACKGROUND_ASSET,
+                output = backgroundFile,
+                overwrite = true
+            )
+        } catch (e: Exception) {
+            Logger.error(TAG, "Failed to install the builtin launcher background.", e)
         }
     }
 }
