@@ -19,6 +19,10 @@
 package com.movtery.zalithlauncher.ui.screens.splash
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,6 +52,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
@@ -109,6 +117,35 @@ private fun ActionMenu(
 ) {
     var installing by remember { mutableStateOf(false) }
 
+    //【按钮脱落动画】点击“同意并安装”后，按钮以最右侧为锚点向下旋转 90° 并脱落坠出屏幕
+    //这只是视觉效果，安装/解压逻辑完全不受影响
+    var dropStarted by remember { mutableStateOf(false) }
+
+    //旋转：900ms 内绕最右侧锚点向下转 90°
+    val rotateProgress by animateFloatAsState(
+        targetValue = if (dropStarted) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = 900,
+            easing = FastOutSlowInEasing
+        ),
+        label = "AgreeButtonRotate"
+    )
+
+    //坠落：旋转接近结束时开始，加速坠出屏幕底部
+    val dropProgress by animateFloatAsState(
+        targetValue = if (dropStarted) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = 900,
+            delayMillis = 700,
+            easing = CubicBezierEasing(0.4f, 0f, 1f, 1f)
+        ),
+        label = "AgreeButtonDrop"
+    )
+
+    val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
+    val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
+
     val xOffset by swapAnimateDpAsState(
         targetValue = 40.dp,
         swapIn = isVisible,
@@ -135,11 +172,27 @@ private fun ActionMenu(
         }
 
         ScalingActionButton(
-            enabled = !installing,
-            modifier = Modifier.fillMaxWidth(),
+            //保持原有配色，避免点击瞬间变灰打断旋转脱落的观感
+            enabled = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .graphicsLayer {
+                    //锚点：按钮最右侧、垂直中点（最右边第一个锚点）
+                    transformOrigin = TransformOrigin(1f, 0.5f)
+                    //绕锚点向下（顺时针）旋转 90°：按钮立起来并脱开
+                    rotationZ = 90f * rotateProgress
+                    //旋转完成后失去支撑，加速坠出屏幕底部
+                    translationY = screenHeightPx * 1.5f * dropProgress
+                    //坠落过程中淡出，避免边缘残留
+                    alpha = 1f - dropProgress
+                },
             onClick = {
-                installing = true
-                onAgreeClick()
+                if (!installing) {
+                    installing = true
+                    dropStarted = true
+                    //动画只是视觉效果，安装/解压立即正常开始
+                    onAgreeClick()
+                }
             }
         ) {
             MarqueeText(text = stringResource(R.string.splash_screen_agree))
