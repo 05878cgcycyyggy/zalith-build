@@ -25,12 +25,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.movtery.zalithlauncher.setting.enums.isLauncherInDarkTheme
 import com.movtery.zalithlauncher.ui.components.influencedByBackgroundColor
+import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
 
 /** 应用整体背景的颜色 */
 @Composable
 fun backgroundColor(): Color = MaterialTheme.colorScheme.surfaceContainer
+
+/**
+ * 有背景图时使用的前景亮色
+ *
+ * 背景图本身偏暗，如果继续跟随主题的 onSurface 取色，在浅色主题下会拿到接近黑色的
+ * 前景色，压在深色背景上完全看不清。有背景图时固定使用亮色，保证足够的对比度。
+ */
+private val ForegroundLight = Color(0xFFF2F2F2)
+
+/**
+ * 前景色：有背景图时用亮色，否则沿用主题原本的前景色
+ *
+ * 没有背景图时底色会回退到主题的 surfaceContainer，浅色主题下那是浅色底，
+ * 这时必须用深色文字，否则会变成白底白字。
+ */
 @Composable
-fun onBackgroundColor(): Color = MaterialTheme.colorScheme.onSurfaceVariant
+private fun foregroundColor(fallback: Color): Color {
+    val hasBackground = LocalBackgroundViewModel.current?.isValid == true
+    return if (hasBackground) ForegroundLight else fallback
+}
+
+@Composable
+fun onBackgroundColor(): Color = foregroundColor(MaterialTheme.colorScheme.onSurfaceVariant)
 
 /**
  * 卡片背景颜色
@@ -47,7 +69,7 @@ fun cardColor(
     enabled = influencedByBackground
 )
 @Composable
-fun onCardColor(): Color = MaterialTheme.colorScheme.onSurface
+fun onCardColor(): Color = foregroundColor(MaterialTheme.colorScheme.onSurface)
 /**
  * 卡片顶部Title的背景颜色，半透明的surface
  */
@@ -75,4 +97,4 @@ fun itemColor(
     )
 }
 @Composable
-fun onItemColor() = MaterialTheme.colorScheme.onSurface
+fun onItemColor() = foregroundColor(MaterialTheme.colorScheme.onSurface)
