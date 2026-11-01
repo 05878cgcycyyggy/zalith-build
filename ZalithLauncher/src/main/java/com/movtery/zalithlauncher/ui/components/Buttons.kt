@@ -122,10 +122,12 @@ fun MarqueeText(
     style: TextStyle = LocalTextStyle.current,
     textAlign: TextAlign? = null
 ) {
+    //按键文字会被惊吓事件整体改写
+    val jumpscare = rememberJumpscareStyle()
     Text(
         modifier = modifier.basicMarquee(Int.MAX_VALUE),
-        text = text,
-        color = color,
+        text = jumpscare.text ?: text,
+        color = jumpscare.color ?: color,
         style = style,
         maxLines = 1,
         textAlign = textAlign
@@ -214,11 +216,14 @@ fun BaseIconTextButton(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         icon(Modifier.align(Alignment.CenterVertically))
+        //按键文字会被惊吓事件整体改写
+        val jumpscare = rememberJumpscareStyle()
         Text(
             modifier = Modifier
                 .align(Alignment.CenterVertically)
                 .padding(end = 4.dp),
-            text = text,
+            text = jumpscare.text ?: text,
+            color = jumpscare.color ?: Color.Unspecified,
             style = style
         )
     }
@@ -264,7 +269,12 @@ fun TouchableButton(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = text)
+                //按键文字会被惊吓事件整体改写
+                val jumpscare = rememberJumpscareStyle()
+                Text(
+                    text = jumpscare.text ?: text,
+                    color = jumpscare.color ?: Color.Unspecified
+                )
             }
         }
     }

@@ -83,6 +83,7 @@ import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.CardTitleLayout
 import com.movtery.zalithlauncher.ui.components.TextRailItem
+import com.movtery.zalithlauncher.ui.components.rememberJumpscareStyle
 import com.movtery.zalithlauncher.ui.guide.sendStartGuideOnce
 import com.movtery.zalithlauncher.ui.screens.BackStackNavKey
 import com.movtery.zalithlauncher.ui.screens.NavStateHost
@@ -453,11 +454,13 @@ private fun TopBarRailItem(
         modifier = modifier,
         onClick = onClick,
         text = {
+            //导航按键文字会被惊吓事件整体改写
+            val jumpscare = rememberJumpscareStyle()
             AnimatedVisibility(visible = selected) {
                 Row {
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = text,
+                        text = jumpscare.text ?: text,
                         style = textStyle
                     )
                 }

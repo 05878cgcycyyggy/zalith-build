@@ -50,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -62,6 +63,7 @@ import com.movtery.zalithlauncher.components.InstallableItem
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.ScalingActionButton
+import com.movtery.zalithlauncher.ui.components.rememberJumpscareStyle
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.theme.itemColor
 import com.movtery.zalithlauncher.ui.theme.onItemColor
@@ -178,6 +180,9 @@ private fun GlitchLabel() {
     //每次刷新用的随机源
     val random = remember { Random(System.nanoTime()) }
 
+    //惊吓事件命中时，按钮文字会被统一切换为惊吓文本
+    val jumpscare = rememberJumpscareStyle()
+
     var glitchText by remember { mutableStateOf("") }
     var jitterX by remember { mutableFloatStateOf(0f) }
     var jitterY by remember { mutableFloatStateOf(0f) }
@@ -210,7 +215,8 @@ private fun GlitchLabel() {
                 scaleX = glitchScaleX
                 rotationZ = glitchRotation
             },
-        text = glitchText,
+        text = jumpscare.text ?: glitchText,
+        color = jumpscare.color ?: Color.Unspecified,
         maxLines = 1,
         style = MaterialTheme.typography.labelLarge,
         textAlign = TextAlign.Center

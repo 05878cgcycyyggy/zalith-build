@@ -62,6 +62,8 @@ import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.base.ObserveFullScreenSetting
 import com.movtery.zalithlauncher.ui.buildAppendedText
+import com.movtery.zalithlauncher.ui.components.JumpscareBlackout
+import com.movtery.zalithlauncher.ui.components.JumpscareEffect
 import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.guide.NextTipLabel
 import com.movtery.zalithlauncher.ui.guide.rememberAppGuides
@@ -339,6 +341,9 @@ class MainActivity : BaseAppCompatActivity() {
                         }
                     )
 
+                    //惊吓事件：每秒抽签，命中后改写所有按键文字、黑屏闪烁，再恢复
+                    JumpscareEffect()
+
                     //节日彩蛋效果层
                     FestivalEffects(
                         modifier = Modifier.fillMaxSize(),
@@ -392,6 +397,9 @@ class MainActivity : BaseAppCompatActivity() {
                             }
                         )
                     }
+
+                    //黑屏闪烁层：盖住整个主界面，仅在惊吓事件的闪烁阶段出现
+                    JumpscareBlackout(modifier = Modifier.fillMaxSize())
                 }
 
                 //显示赞助支持的小弹窗

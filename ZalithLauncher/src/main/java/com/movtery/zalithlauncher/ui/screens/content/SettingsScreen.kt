@@ -42,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
@@ -50,6 +51,7 @@ import androidx.navigation3.runtime.entryProvider
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.fadeEdge
+import com.movtery.zalithlauncher.ui.components.rememberJumpscareStyle
 import com.movtery.zalithlauncher.ui.screens.NestedNavDisplay
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
@@ -167,9 +169,12 @@ private fun TabMenu(
                     item.icon()
                 },
                 label = {
+                    //导航按键文字会被惊吓事件整体改写
+                    val jumpscare = rememberJumpscareStyle()
                     Text(
                         modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                        text = stringResource(item.textRes),
+                        text = jumpscare.text ?: stringResource(item.textRes),
+                        color = jumpscare.color ?: Color.Unspecified,
                         maxLines = 1,
                         style = MaterialTheme.typography.labelMedium
                     )

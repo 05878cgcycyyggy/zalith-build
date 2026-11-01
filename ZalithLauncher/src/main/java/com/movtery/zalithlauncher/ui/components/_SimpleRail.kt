@@ -139,8 +139,10 @@ fun TextRailItem(
             val contentColor by animateColorAsState(
                 targetValue = if (selected) selectedContentColor else unselectedContentColor
             )
+            //导航按键的文字会被惊吓事件整体改写
+            val jumpscare = rememberJumpscareStyle()
             CompositionLocalProvider(
-                LocalContentColor provides contentColor
+                LocalContentColor provides (jumpscare.color ?: contentColor)
             ) {
                 icon()
                 text()
