@@ -50,8 +50,8 @@ object ControllerProxy {
     ) {
         if (proxyClient.value == null) {
             try {
-                val transport = UnixSocketTransport(BuildKeys.LAUNCHER_NAME)
-                Os.setenv("TOUCH_CONTROLLER_PROXY_SOCKET", BuildKeys.LAUNCHER_NAME, true)
+                val transport = UnixSocketTransport(BuildKeys.LAUNCHER_IDENTIFIER)
+                Os.setenv("TOUCH_CONTROLLER_PROXY_SOCKET", BuildKeys.LAUNCHER_IDENTIFIER, true)
                 val client = LauncherProxyClient(
                     transport = transport,
                     capabilities = setOf(PlatformCapability.TEXT_STATUS),
