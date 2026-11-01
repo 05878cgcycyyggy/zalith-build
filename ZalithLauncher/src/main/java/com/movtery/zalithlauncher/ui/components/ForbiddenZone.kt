@@ -18,6 +18,8 @@
 
 package com.movtery.zalithlauncher.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,10 +29,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 /**
  * 禁地彩蛋
@@ -112,13 +123,44 @@ fun isForbiddenCrash(throwable: Throwable): Boolean {
  * 下载页里的文字渲染点太多（分类标签、列表项、搜索框、按钮……），逐个改写既容易漏
  * 也不好维护。这里改为在整页之上压一层不透明遮挡，再把警告文字铺满整个屏幕，
  * 效果就是「页面上的每一个字都变成了这一句」。
+ *
+ * 出场不是一下子糊上来，而是：黑幕先淡入，压住原来的界面，随后警告文字
+ * 一行一行从下方渗出，节奏不均匀，像某种东西正在慢慢占满屏幕。
  */
 @Composable
 fun ForbiddenOverlay(modifier: Modifier = Modifier) {
     if (!LocalForbiddenZone.current) return
 
+    val lineCount = 22
+    val random = remember { Random(System.nanoTime()) }
+
+    //黑幕是否已经登场
+    var appeared by remember { mutableStateOf(false) }
+    //已经渗出的行数
+    var revealedLines by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        appeared = true
+        //等黑幕压下来之后再开始冒字，否则文字会浮在还亮着的原界面之上
+        delay(220)
+        while (revealedLines < lineCount) {
+            //每行的间隔略微不均匀，避免机械的匀速感
+            delay(random.nextLong(24L, 62L))
+            revealedLines++
+        }
+    }
+
+    //黑幕淡入
+    val backdropAlpha by animateFloatAsState(
+        targetValue = if (appeared) 1f else 0f,
+        animationSpec = tween(220),
+        label = "forbiddenBackdrop"
+    )
+
     Box(
-        modifier = modifier.background(Color.Black)
+        modifier = modifier
+            .graphicsLayer { alpha = backdropAlpha }
+            .background(Color.Black)
     ) {
         Column(
             modifier = Modifier
@@ -126,8 +168,26 @@ fun ForbiddenOverlay(modifier: Modifier = Modifier) {
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            repeat(22) {
+            repeat(lineCount) { index ->
+                val visible = index < revealedLines
+
+                //每一行各自淡入并轻微上移
+                val lineAlpha by animateFloatAsState(
+                    targetValue = if (visible) 1f else 0f,
+                    animationSpec = tween(140),
+                    label = "forbiddenLineAlpha$index"
+                )
+                val lineShift by animateFloatAsState(
+                    targetValue = if (visible) 0f else 10f,
+                    animationSpec = tween(140),
+                    label = "forbiddenLineShift$index"
+                )
+
                 Text(
+                    modifier = Modifier.graphicsLayer {
+                        alpha = lineAlpha
+                        translationY = lineShift
+                    },
                     text = FORBIDDEN_TEXT,
                     color = FORBIDDEN_COLOR,
                     style = MaterialTheme.typography.titleMedium,

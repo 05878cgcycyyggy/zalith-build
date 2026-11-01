@@ -40,15 +40,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -68,6 +72,9 @@ import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.ui.components.LittleTextLabel
 import com.movtery.zalithlauncher.ui.screens.content.elements.VersionIconImage
 import com.movtery.zalithlauncher.ui.screens.content.home.CardIconShape
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlin.random.Random
 
 /** 版本卡片启动回调 */
 val LocalHomeCardLauncher = staticCompositionLocalOf<(Version) -> Unit> { {} }
@@ -312,6 +319,9 @@ private fun InfoRow(version: Version) {
     }
 }
 
+/** 版本卡片上显示的乱码名称 */
+private const val GLITCH_NAME = "乱码"
+
 /** 版本名称 */
 @Composable
 private fun CardNameText(
@@ -319,13 +329,41 @@ private fun CardNameText(
     card: VersionCardState?,
     version: Version?
 ) {
-    card?.record?.versionName?.let { name ->
+    card?.record?.versionName?.let {
+        //【乱码】版本名称固定显示为「乱码」，并持续跳动
+        val random = remember { Random(System.nanoTime()) }
+
+        var jitterX by remember { mutableFloatStateOf(0f) }
+        var jitterY by remember { mutableFloatStateOf(0f) }
+        var glitchScaleX by remember { mutableFloatStateOf(1f) }
+        var glitchRotation by remember { mutableFloatStateOf(0f) }
+        var glitchAlpha by remember { mutableFloatStateOf(1f) }
+
+        LaunchedEffect(Unit) {
+            while (isActive) {
+                //位置、横向缩放、旋转、亮度都在小范围内抖动，像信号不稳
+                jitterX = random.nextFloat() * 6f - 3f
+                jitterY = random.nextFloat() * 4f - 2f
+                glitchScaleX = 0.94f + random.nextFloat() * 0.12f
+                glitchRotation = random.nextFloat() * 6f - 3f
+                glitchAlpha = 0.65f + random.nextFloat() * 0.35f
+                //刷新间隔随机，跳动节奏不规律
+                delay(random.nextLong(70L, 170L))
+            }
+        }
+
         Text(
             modifier = modifier
-                .basicMarquee(iterations = Int.MAX_VALUE)
+                .graphicsLayer {
+                    translationX = jitterX
+                    translationY = jitterY
+                    scaleX = glitchScaleX
+                    rotationZ = glitchRotation
+                    alpha = glitchAlpha
+                }
                 .then(if (version == null) Modifier.alpha(0.55f) else Modifier),
             maxLines = 1,
-            text = name,
+            text = GLITCH_NAME,
             style = MaterialTheme.typography.labelLarge
         )
     }
