@@ -34,6 +34,9 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.context.COPY_LABEL_LINK
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
+import com.movtery.zalithlauncher.ui.components.FORBIDDEN_COLOR
+import com.movtery.zalithlauncher.ui.components.forbiddenCrashBody
+import com.movtery.zalithlauncher.ui.components.isForbiddenCrash
 import com.movtery.zalithlauncher.ui.screens.main.ErrorScreen
 import com.movtery.zalithlauncher.ui.screens.main.crashlogs.ShareLinkOperation
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
@@ -113,18 +116,31 @@ class ErrorActivity : BaseAppCompatActivity() {
             }
             else -> {
                 val throwable = extras.getSerializableSafely(BUNDLE_THROWABLE, Throwable::class.java) ?: return runFinish()
-                val message = getString(R.string.crash_launcher_message)
-                val messageBody = throwableToString(throwable)
-                ErrorMessage(
-                    message = message,
-                    messageBody = messageBody,
-                    crashType = CrashType.LAUNCHER_CRASH,
-                    logFile = PathManager.FILE_CRASH_REPORT
-                )
+
+                //【禁地】闯进下载页导致的崩溃：整页只留下满屏日语，重启入口被锁死
+                if (isForbiddenCrash(throwable)) {
+                    ErrorMessage(
+                        message = forbiddenCrashBody(),
+                        messageBody = "",
+                        crashType = CrashType.FORBIDDEN_CRASH,
+                        logFile = PathManager.FILE_CRASH_REPORT
+                    )
+                } else {
+                    val message = getString(R.string.crash_launcher_message)
+                    val messageBody = throwableToString(throwable)
+                    ErrorMessage(
+                        message = message,
+                        messageBody = messageBody,
+                        crashType = CrashType.LAUNCHER_CRASH,
+                        logFile = PathManager.FILE_CRASH_REPORT
+                    )
+                }
             }
         }
 
         val logFile = errorMessage.logFile
+        //【禁地】闯入禁地导致的崩溃不允许重启，重启入口会变暗且无法点击
+        val isForbidden = errorMessage.crashType == CrashType.FORBIDDEN_CRASH
         val canRestart: Boolean = extras.getBoolean(BUNDLE_CAN_RESTART, true)
         val logExists = logFile.exists() && logFile.isFile
 
@@ -152,6 +168,8 @@ class ErrorActivity : BaseAppCompatActivity() {
                         shareLogs = logExists,
                         canUpload = viewModel.canUpload,
                         canRestart = canRestart,
+                        //【禁地】重启按钮保留在原位，但变暗且无法点击
+                        restartLocked = isForbidden,
                         onShareLogsClick = {
                             if (logExists) {
                                 shareFile(this@ErrorActivity, logFile)
@@ -168,14 +186,23 @@ class ErrorActivity : BaseAppCompatActivity() {
                             this@ErrorActivity.requestedOrientation = it
                         },
                     ) {
-                        Text(
-                            text = errorMessage.message,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = errorMessage.messageBody,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        //【禁地】整页只留下满屏的日语，不展示任何常规崩溃信息
+                        if (isForbidden) {
+                            Text(
+                                text = errorMessage.message,
+                                color = FORBIDDEN_COLOR,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        } else {
+                            Text(
+                                text = errorMessage.message,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = errorMessage.messageBody,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
             }
@@ -202,7 +229,15 @@ enum class CrashType(val textRes: Int) {
     /**
      * 游戏运行崩溃
      */
-    GAME_CRASH(R.string.crash_type_game)
+    GAME_CRASH(R.string.crash_type_game),
+
+    /**
+     * 闯入禁地导致的崩溃
+     *
+     * 这一类型只在玩家用特殊方式进入下载页时出现，
+     * 崩溃页会把它渲染成满屏日语并锁死重启入口。
+     */
+    FORBIDDEN_CRASH(R.string.crash_type_launcher)
 }
 
 /**

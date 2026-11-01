@@ -61,7 +61,7 @@ object JumpscareState {
     val STARE_COLOR = Color(0xFFFF1A1A)
 
     /** 每秒进行一次抽签，抽中的概率 */
-    const val TRIGGER_CHANCE = 0.20f
+    const val TRIGGER_CHANCE = 0.05f
 
     /** 抽签间隔（毫秒） */
     const val TICK_INTERVAL_MS = 1_000L

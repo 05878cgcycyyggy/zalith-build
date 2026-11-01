@@ -38,12 +38,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -53,9 +55,16 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.download.assets.favorites.FavoriteProjectsRepository
 import com.movtery.zalithlauncher.game.download.assets.platform.Platform
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformClasses
+import com.movtery.zalithlauncher.path.PathManager
+import com.movtery.zalithlauncher.ui.activities.showLauncherCrash
 import com.movtery.zalithlauncher.ui.base.BaseScreen
+import com.movtery.zalithlauncher.ui.components.FORBIDDEN_COUNTDOWN_MS
+import com.movtery.zalithlauncher.ui.components.ForbiddenOverlay
+import com.movtery.zalithlauncher.ui.components.LocalForbiddenZone
 import com.movtery.zalithlauncher.ui.components.fadeEdge
+import com.movtery.zalithlauncher.ui.components.forbiddenCrash
 import com.movtery.zalithlauncher.ui.components.rememberJumpscareStyle
+import kotlinx.coroutines.delay
 import com.movtery.zalithlauncher.ui.screens.NestedNavDisplay
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
@@ -74,6 +83,7 @@ import com.movtery.zalithlauncher.ui.screens.navigateOnce
 import com.movtery.zalithlauncher.ui.screens.onBack
 import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
 import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
+import com.movtery.zalithlauncher.utils.writeCrashFile
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
@@ -134,27 +144,51 @@ fun DownloadScreen(
         FavoriteProjectsRepository.ensureLoaded()
     }
 
-    BaseScreen(
-        screenKey = key,
-        currentKey = backScreenViewModel.mainScreen.currentKey,
-        useClassEquality = true
-    ) { isVisible: Boolean ->
-        Row(modifier = Modifier.fillMaxSize()) {
-            TabMenu(
-                modifier = Modifier.fillMaxHeight(),
-                isVisible = isVisible,
-                backStack = key.backStack,
-                backScreenViewModel = backScreenViewModel,
-            )
+    //【禁地】下载入口已被隐藏，用特殊方式闯进来的玩家会看到整页警告，并在 3 秒后崩溃
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        delay(FORBIDDEN_COUNTDOWN_MS)
 
-            NavigationUI(
-                key = key,
-                backScreenViewModel = backScreenViewModel,
-                eventViewModel = eventViewModel,
-                modpackImportViewModel = modpackImportViewModel,
-                submitError = submitError,
-                modifier = Modifier.fillMaxHeight()
-            )
+        val crash = forbiddenCrash()
+        //先写入真实的崩溃日志，保证日志内容和一次真崩溃完全一致
+        writeCrashFile(
+            file = PathManager.FILE_CRASH_REPORT,
+            throwable = crash
+        ) { }
+
+        //再跳到启动器原有的崩溃页面。这里不杀进程，只是把主界面清掉换成崩溃页，
+        //玩家看到的效果就是「它自己崩了」，但应用并没有被强行终结。
+        showLauncherCrash(context, crash)
+    }
+
+    //只在下载页内部把界面标记为禁地，页面以外的一切界面不受影响
+    CompositionLocalProvider(LocalForbiddenZone provides true) {
+        BaseScreen(
+            screenKey = key,
+            currentKey = backScreenViewModel.mainScreen.currentKey,
+            useClassEquality = true
+        ) { isVisible: Boolean ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    TabMenu(
+                        modifier = Modifier.fillMaxHeight(),
+                        isVisible = isVisible,
+                        backStack = key.backStack,
+                        backScreenViewModel = backScreenViewModel,
+                    )
+                    NavigationUI(
+                        key = key,
+                        backScreenViewModel = backScreenViewModel,
+                        eventViewModel = eventViewModel,
+                        modpackImportViewModel = modpackImportViewModel,
+                        submitError = submitError,
+                        modifier = Modifier.fillMaxHeight()
+                    )
+                }
+
+                //覆盖层：把页面上残存的文字全部遮住，只留下满屏的红色警告
+                ForbiddenOverlay(modifier = Modifier.fillMaxSize())
+            }
         }
     }
 }

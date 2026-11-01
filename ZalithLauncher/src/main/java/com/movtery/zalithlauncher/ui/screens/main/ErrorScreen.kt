@@ -74,6 +74,7 @@ fun ErrorScreen(
     shareLogs: Boolean = true,
     canUpload: Boolean = false,
     canRestart: Boolean = true,
+    restartLocked: Boolean = false,
     onShareLogsClick: () -> Unit = {},
     onUploadClick: () -> Unit = {},
     onRestartClick: () -> Unit = {},
@@ -91,6 +92,7 @@ fun ErrorScreen(
             shareLogs = shareLogs,
             canUpload = canUpload,
             canRestart = canRestart,
+            restartLocked = restartLocked,
             onShareLogsClick = onShareLogsClick,
             onUploadClick = onUploadClick,
             onRestartClick = onRestartClick,
@@ -106,6 +108,7 @@ fun ErrorScreen(
             shareLogs = shareLogs,
             canUpload = canUpload,
             canRestart = canRestart,
+            restartLocked = restartLocked,
             onShareLogsClick = onShareLogsClick,
             onUploadClick = onUploadClick,
             onRestartClick = onRestartClick,
@@ -127,6 +130,7 @@ private fun ErrorScreenLandscape(
     shareLogs: Boolean,
     canUpload: Boolean,
     canRestart: Boolean,
+    restartLocked: Boolean,
     onShareLogsClick: () -> Unit,
     onUploadClick: () -> Unit,
     onRestartClick: () -> Unit,
@@ -141,6 +145,8 @@ private fun ErrorScreenLandscape(
                 CrashType.LAUNCHER_CRASH -> stringResource(R.string.crash_launcher_title, BuildKeys.LAUNCHER_NAME)
                 //游戏运行崩溃了，大概和启动器关系不大，仅展示应用标题
                 CrashType.GAME_CRASH -> BuildKeys.LAUNCHER_NAME
+                //【禁地】不显示任何应用信息，只留下那句日语
+                CrashType.FORBIDDEN_CRASH -> "ここに来てはいけない"
             }
             Box(
                 modifier = Modifier
@@ -187,9 +193,11 @@ private fun ErrorScreenLandscape(
             ActionLayout(
                 modifier = Modifier.weight(3f),
                 crashType = crashType,
-                shareLogs = shareLogs,
-                canUpload = canUpload,
+                //【禁地】不提供上传日志和分享日志的入口
+                shareLogs = shareLogs && !restartLocked,
+                canUpload = canUpload && !restartLocked,
                 canRestart = canRestart,
+                restartLocked = restartLocked,
                 onShareLogsClick = onShareLogsClick,
                 onUploadClick = onUploadClick,
                 onRestartClick = onRestartClick,
@@ -209,6 +217,7 @@ private fun ErrorScreenPortrait(
     shareLogs: Boolean,
     canUpload: Boolean,
     canRestart: Boolean,
+    restartLocked: Boolean,
     onShareLogsClick: () -> Unit,
     onUploadClick: () -> Unit,
     onRestartClick: () -> Unit,
@@ -256,7 +265,7 @@ private fun ErrorScreenPortrait(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false }
                         ) {
-                            if (canUpload) {
+                            if (canUpload && !restartLocked) {
                                 DropdownMenuItem(
                                     text = {
                                         MarqueeText(text = stringResource(R.string.crash_link_share_button))
@@ -267,16 +276,18 @@ private fun ErrorScreenPortrait(
                                     }
                                 )
                             }
-                            DropdownMenuItem(
-                                text = {
-                                    MarqueeText(text = stringResource(R.string.crash_share_logs))
-                                },
-                                onClick = {
-                                    showMenu = false
-                                    onShareLogsClick()
-                                },
-                                enabled = shareLogs
-                            )
+                            if (!restartLocked) {
+                                DropdownMenuItem(
+                                    text = {
+                                        MarqueeText(text = stringResource(R.string.crash_share_logs))
+                                    },
+                                    onClick = {
+                                        showMenu = false
+                                        onShareLogsClick()
+                                    },
+                                    enabled = shareLogs
+                                )
+                            }
                             if (canRestart) {
                                 DropdownMenuItem(
                                     text = {
@@ -285,7 +296,9 @@ private fun ErrorScreenPortrait(
                                     onClick = {
                                         showMenu = false
                                         onRestartClick()
-                                    }
+                                    },
+                                    //【禁地】重启入口变暗且无法点击，就像被抠掉了一样
+                                    enabled = !restartLocked
                                 )
                             }
                             DropdownMenuItem(
@@ -311,13 +324,15 @@ private fun ErrorScreenPortrait(
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            //崩溃类型
-            Text(
-                text = stringResource(
-                    R.string.crash_type,
-                    stringResource(crashType.textRes)
+            //崩溃类型：闯进禁地时不展示任何常规信息
+            if (!restartLocked) {
+                Text(
+                    text = stringResource(
+                        R.string.crash_type,
+                        stringResource(crashType.textRes)
+                    )
                 )
-            )
+            }
 
             if (crashType == CrashType.LAUNCHER_CRASH) {
                 //仅在启动器崩溃时，才显示这行略显严重的文本
@@ -368,6 +383,7 @@ private fun ActionLayout(
     shareLogs: Boolean,
     canUpload: Boolean,
     canRestart: Boolean,
+    restartLocked: Boolean,
     onShareLogsClick: () -> Unit = {},
     onUploadClick: () -> Unit = {},
     onRestartClick: () -> Unit = {},
@@ -378,13 +394,16 @@ private fun ActionLayout(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Top
         ) {
-            Text(
-                text = stringResource(
-                    R.string.crash_type,
-                    stringResource(crashType.textRes)
-                ),
-                style = MaterialTheme.typography.bodyMedium
-            )
+            //崩溃类型：闯进禁地时不展示任何常规信息
+            if (!restartLocked) {
+                Text(
+                    text = stringResource(
+                        R.string.crash_type,
+                        stringResource(crashType.textRes)
+                    ),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
 
         Column(
@@ -409,7 +428,9 @@ private fun ActionLayout(
             if (canRestart) {
                 ScalingActionButton(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = onRestartClick
+                    onClick = onRestartClick,
+                    //【禁地】重启入口变暗且无法点击，就像被抠掉了一样
+                    enabled = !restartLocked
                 ) {
                     MarqueeText(text = stringResource(R.string.crash_restart))
                 }
